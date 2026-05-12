@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CliniAgenda | Acceso</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg sticky-top clinic-navbar">
+    <div class="container">
+      <a class="navbar-brand fw-bold" th:href="@{/}">CliniAgenda</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+        aria-controls="mainNavbar" aria-expanded="false" aria-label="Alternar navegación">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNavbar">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+          <li class="nav-item"><a class="nav-link" th:href="@{/}">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link active" th:href="@{/acceso}">Registro / Login</a></li>
+          <li class="nav-item"><a class="nav-link" th:href="@{/agenda}">Agenda</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- =====================================================
+         SECCIÓN: REGISTRO Y LOGIN
+         Maneja UsuarioController con dos endpoints:
+           POST /registro  → registrar usuario
+           POST /login     → iniciar sesión simulado
+    ====================================================== -->
+    <section id="acceso" class="py-5 section-soft">
+      <div class="container">
+        <div class="row g-4">
+
+          <!-- Columna informativa -->
+          <div class="col-lg-5">
+            <p class="section-eyebrow mb-2">Acceso seguro</p>
+            <h2 class="section-title">Registro y login de pacientes</h2>
+            <p class="text-secondary">
+              Los formularios validan los datos con anotaciones <code>@Valid</code> en el
+              <strong>UsuarioController</strong>. El registro y el login son simulados
+              (sin base de datos real en este entregable).
+            </p>
+            <div class="info-box mt-4">
+              <strong>Validaciones activas:</strong>
+              <ul class="mb-0 mt-2">
+                <li>Nombre: mínimo 3 caracteres</li>
+                <li>DNI: exactamente 8 dígitos</li>
+                <li>Correo: formato válido</li>
+                <li>Teléfono: exactamente 9 dígitos</li>
+                <li>Contraseña: mínimo 6 caracteres</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Tarjeta con pestañas Registro / Login -->
+          <div class="col-lg-7">
+            <div class="card border-0 shadow-sm access-card">
+              <div class="card-body p-4 p-lg-5">
+
+                <!-- Pestañas Bootstrap -->
+                <ul class="nav nav-pills mb-4 gap-2" id="accessTabs" role="tablist">
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="register-tab"
+                      data-bs-toggle="pill" data-bs-target="#register-pane"
+                      type="button" role="tab" aria-controls="register-pane" aria-selected="true">
+                      Registro
+                    </button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="login-tab"
+                      data-bs-toggle="pill" data-bs-target="#login-pane"
+                      type="button" role="tab" aria-controls="login-pane" aria-selected="false">
+                      Login
+                    </button>
+                  </li>
+                </ul>
+
+                <div class="tab-content">
+
+                  <!-- ==================== PESTAÑA REGISTRO ==================== -->
+                  <div class="tab-pane fade show active" id="register-pane"
+                       role="tabpanel" aria-labelledby="register-tab" tabindex="0">
+
+                    <!--
+                      th:action  → POST /registro (UsuarioController.registrar)
+                      th:object  → vincula con el objeto Usuario del modelo
+                      Los errores de @Valid se muestran con th:errors
+                    -->
+                    <form th:action="@{/registro}" th:object="${usuario}" method="post" novalidate>
+
+                      <!-- Mensaje flash de éxito (viene del RedirectAttributes) -->
+                      <div th:if="${successMsg}" class="alert alert-success mb-4" th:text="${successMsg}"></div>
+
+                      <!-- Errores globales -->
+                      <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger mb-4">
+                        <ul class="mb-0">
+                          <li th:each="err : ${#fields.allErrors()}" th:text="${err}"></li>
+                        </ul>
+                      </div>
+
+                      <div class="row g-3">
+
+                        <!-- Nombre -->
+                        <div class="col-md-6">
+                          <label for="registerName" class="form-label">Nombre completo</label>
+                          <input type="text"
+                                 th:field="*{name}"
+                                 id="registerName"
+                                 class="form-control"
+                                 th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"
+                                 placeholder="Ej. María Salazar">
+                          <div class="invalid-feedback" th:errors="*{name}"></div>
+                        </div>
+
+                        <!-- DNI -->
+                        <div class="col-md-6">
+                          <label for="registerDni" class="form-label">DNI</label>
+                          <input type="text"
+                                 th:field="*{dni}"
+                                 id="registerDni"
+                                 class="form-control"
+                                 th:classappend="${#fields.hasErrors('dni')} ? 'is-invalid'"
+                                 placeholder="8 dígitos"
+                                 maxlength="8">
+                          <div class="invalid-feedback" th:errors="*{dni}"></div>
+                        </div>
+
+                        <!-- Correo -->
+                        <div class="col-md-6">
+                          <label for="registerEmail" class="form-label">Correo electrónico</label>
+                          <input type="email"
+                                 th:field="*{email}"
+                                 id="registerEmail"
+                                 class="form-control"
+                                 th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
+                                 placeholder="correo@ejemplo.com">
+                          <div class="invalid-feedback" th:errors="*{email}"></div>
+                        </div>
+
+                        <!-- Teléfono -->
+                        <div class="col-md-6">
+                          <label for="registerPhone" class="form-label">Teléfono</label>
+                          <input type="tel"
+                                 th:field="*{phone}"
+                                 id="registerPhone"
+                                 class="form-control"
+                                 th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid'"
+                                 placeholder="9 dígitos"
+                                 maxlength="9">
+                          <div class="invalid-feedback" th:errors="*{phone}"></div>
+                        </div>
+
+                        <!-- Contraseña -->
+                        <div class="col-md-6">
+                          <label for="registerPassword" class="form-label">Contraseña</label>
+                          <input type="password"
+                                 th:field="*{password}"
+                                 id="registerPassword"
+                                 class="form-control"
+                                 th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
+                                 placeholder="Mínimo 6 caracteres">
+                          <div class="invalid-feedback" th:errors="*{password}"></div>
+                        </div>
+
+                        <!--
+                          Confirmar contraseña:
+                          No se valida en el modelo (Usuario no tiene ese campo),
+                          la validación de coincidencia se hace en el controlador
+                          o se deja para JS del lado del cliente como en el prototipo.
+                        -->
+                        <div class="col-md-6">
+                          <label for="registerConfirm" class="form-label">Confirmar contraseña</label>
+                          <input type="password"
+                                 id="registerConfirm"
+                                 name="confirmPassword"
+                                 class="form-control"
+                                 placeholder="Repite tu contraseña">
+                        </div>
+
+                      </div><!-- /row -->
+
+                      <button type="submit" class="btn btn-primary mt-4">Crear cuenta</button>
+                    </form>
+
+                  </div><!-- /register-pane -->
+
+                  <!-- ==================== PESTAÑA LOGIN ==================== -->
+                  <div class="tab-pane fade" id="login-pane"
+                       role="tabpanel" aria-labelledby="login-tab" tabindex="0">
+
+                    <!--
+                      th:action  → POST /login (UsuarioController.login)
+                      Login simple: solo recibe email y password como @RequestParam
+                      No usa th:object porque no se vincula a un modelo completo
+                    -->
+                    <form th:action="@{/login}" method="post" novalidate>
+
+                      <!-- Mensajes flash -->
+                      <div th:if="${successMsg}" class="alert alert-success mb-4" th:text="${successMsg}"></div>
+                      <div th:if="${errorMsg}"   class="alert alert-danger mb-4"  th:text="${errorMsg}"></div>
+
+                      <div class="row g-3">
+
+                        <!-- Email -->
+                        <div class="col-md-6">
+                          <label for="loginEmail" class="form-label">Correo electrónico</label>
+                          <input type="email"
+                                 id="loginEmail"
+                                 name="email"
+                                 class="form-control"
+                                 placeholder="correo@ejemplo.com">
+                        </div>
+
+                        <!-- Contraseña -->
+                        <div class="col-md-6">
+                          <label for="loginPassword" class="form-label">Contraseña</label>
+                          <input type="password"
+                                 id="loginPassword"
+                                 name="password"
+                                 class="form-control"
+                                 placeholder="Ingresa tu contraseña">
+                        </div>
+
+                      </div><!-- /row -->
+
+                      <button type="submit" class="btn btn-outline-dark mt-4">Ingresar</button>
+                    </form>
+
+                  </div><!-- /login-pane -->
+
+                </div><!-- /tab-content -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="py-4">
+    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+      <p class="mb-0">Proyecto final del curso de Marcos de Desarrollo Web · 2026</p>
+      <p class="mb-0 text-secondary">Spring Boot + Thymeleaf · UsuarioController</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+  <script th:src="@{/js/app.js}"></script>
+</body>
+</html>

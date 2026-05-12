@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CliniAgenda | Agenda de citas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg sticky-top clinic-navbar">
+    <div class="container">
+      <a class="navbar-brand fw-bold" th:href="@{/}">CliniAgenda</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+        aria-controls="mainNavbar" aria-expanded="false" aria-label="Alternar navegación">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNavbar">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+          <li class="nav-item"><a class="nav-link" th:href="@{/}">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" th:href="@{/acceso}">Registro / Login</a></li>
+          <li class="nav-item"><a class="nav-link active" th:href="@{/agenda}">Agenda</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- =====================================================
+         SECCIÓN: REGISTRAR NUEVA CITA
+         El formulario usa th:action y th:object para vincularse
+         al objeto "cita" que envía PacienteController
+    ====================================================== -->
+    <section id="reserva" class="py-5">
+      <div class="container">
+        <div class="row g-4 align-items-start">
+
+          <!-- Columna informativa -->
+          <div class="col-lg-5">
+            <p class="section-eyebrow mb-2">Spring MVC</p>
+            <h2 class="section-title">Registrar una cita</h2>
+            <p class="text-secondary">
+              El formulario envía los datos al <strong>PacienteController</strong>, que aplica
+              validaciones con <code>@Valid</code> y registra la cita en la agenda.
+            </p>
+            <div class="info-box">
+              <strong>Cobertura del entregable:</strong>
+              <ul class="mb-0 mt-2">
+                <li>Controlador Spring MVC (<code>PacienteController</code>)</li>
+                <li>Validación con <code>@Valid</code> y <code>BindingResult</code></li>
+                <li>Renderizado dinámico con Thymeleaf</li>
+                <li>Datos en memoria (lista estática)</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Formulario vinculado al modelo Cita -->
+          <div class="col-lg-7">
+            <div class="card border-0 shadow-sm booking-card">
+              <div class="card-body p-4 p-lg-5">
+
+                <!--
+                  th:action  → POST a /agenda (PacienteController)
+                  th:object  → vincula campos con el objeto Cita
+                  method     → siempre POST para envío de formulario
+                -->
+                <form th:action="@{/agenda}" th:object="${cita}" method="post" novalidate>
+
+                  <!-- Mensaje de éxito tras redirect -->
+                  <div th:if="${successMsg}" class="alert alert-success mb-4" th:text="${successMsg}"></div>
+
+                  <!-- Errores globales de validación -->
+                  <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger mb-4">
+                    <ul class="mb-0">
+                      <li th:each="err : ${#fields.allErrors()}" th:text="${err}"></li>
+                    </ul>
+                  </div>
+
+                  <div class="row g-3">
+
+                    <!-- Paciente -->
+                    <div class="col-md-6">
+                      <label for="patientName" class="form-label">Paciente</label>
+                      <!--
+                        th:field="*{patient}" es equivalente a:
+                          id="patient" name="patient" th:value="${cita.patient}"
+                        Spring lo vincula automáticamente con Cita.patient
+                      -->
+                      <input type="text"
+                             th:field="*{patient}"
+                             id="patientName"
+                             class="form-control"
+                             th:classappend="${#fields.hasErrors('patient')} ? 'is-invalid'"
+                             placeholder="Nombre del paciente">
+                      <div class="invalid-feedback" th:errors="*{patient}"></div>
+                    </div>
+
+                    <!-- Médico -->
+                    <div class="col-md-6">
+                      <label for="doctorName" class="form-label">Médico</label>
+                      <input type="text"
+                             th:field="*{doctor}"
+                             id="doctorName"
+                             class="form-control"
+                             th:classappend="${#fields.hasErrors('doctor')} ? 'is-invalid'"
+                             placeholder="Ej. Dra. Flores">
+                      <div class="invalid-feedback" th:errors="*{doctor}"></div>
+                    </div>
+
+                    <!-- Servicio -->
+                    <div class="col-md-6">
+                      <label for="serviceSelect" class="form-label">Servicio</label>
+                      <select th:field="*{service}"
+                              id="serviceSelect"
+                              class="form-select"
+                              th:classappend="${#fields.hasErrors('service')} ? 'is-invalid'">
+                        <option value="">Seleccionar servicio</option>
+                        <option value="Medicina General">Medicina General</option>
+                        <option value="Pediatría">Pediatría</option>
+                        <option value="Cardiología">Cardiología</option>
+                        <option value="Odontología">Odontología</option>
+                        <option value="Ginecología">Ginecología</option>
+                        <option value="Laboratorio">Laboratorio</option>
+                      </select>
+                      <div class="invalid-feedback" th:errors="*{service}"></div>
+                    </div>
+
+                    <!-- Fecha -->
+                    <div class="col-md-6">
+                      <label for="appointmentDate" class="form-label">Fecha</label>
+                      <input type="date"
+                             th:field="*{date}"
+                             id="appointmentDate"
+                             class="form-control"
+                             th:classappend="${#fields.hasErrors('date')} ? 'is-invalid'"
+                             th:min="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}">
+                      <div class="invalid-feedback" th:errors="*{date}"></div>
+                    </div>
+
+                    <!-- Hora -->
+                    <div class="col-md-6">
+                      <label for="appointmentTime" class="form-label">Hora</label>
+                      <select th:field="*{time}"
+                              id="appointmentTime"
+                              class="form-select"
+                              th:classappend="${#fields.hasErrors('time')} ? 'is-invalid'">
+                        <option value="">Seleccionar hora</option>
+                        <option value="08:00">08:00</option>
+                        <option value="09:00">09:00</option>
+                        <option value="10:00">10:00</option>
+                        <option value="11:00">11:00</option>
+                        <option value="14:00">14:00</option>
+                        <option value="15:00">15:00</option>
+                        <option value="16:00">16:00</option>
+                        <option value="17:00">17:00</option>
+                      </select>
+                      <div class="invalid-feedback" th:errors="*{time}"></div>
+                    </div>
+
+                    <!-- Modalidad -->
+                    <div class="col-md-6">
+                      <label for="appointmentMode" class="form-label">Modalidad</label>
+                      <select th:field="*{mode}"
+                              id="appointmentMode"
+                              class="form-select"
+                              th:classappend="${#fields.hasErrors('mode')} ? 'is-invalid'">
+                        <option value="">Seleccionar modalidad</option>
+                        <option value="Presencial">Presencial</option>
+                        <option value="Teleconsulta">Teleconsulta</option>
+                      </select>
+                      <div class="invalid-feedback" th:errors="*{mode}"></div>
+                    </div>
+
+                    <!-- Observaciones -->
+                    <div class="col-12">
+                      <label for="appointmentNotes" class="form-label">Observaciones</label>
+                      <textarea th:field="*{notes}"
+                                id="appointmentNotes"
+                                class="form-control"
+                                rows="3"
+                                placeholder="Síntomas o comentarios breves"></textarea>
+                    </div>
+
+                  </div><!-- /row -->
+
+                  <button type="submit" class="btn btn-primary mt-4">Registrar cita</button>
+                </form>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================
+         SECCIÓN: AGENDA VISUAL
+         Renderizado dinámico con th:each — Thymeleaf itera
+         la lista "appointments" que envía PacienteController
+    ====================================================== -->
+    <section id="agenda" class="py-5 section-soft">
+      <div class="container">
+
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end mb-4 gap-3">
+          <div>
+            <p class="section-eyebrow mb-2">Agenda visual · Thymeleaf</p>
+            <h2 class="section-title mb-0">Citas programadas</h2>
+          </div>
+          <p class="text-secondary mb-0 section-copy">
+            Clic en "Ver detalle" para abrir el modal con información completa de cada cita.
+          </p>
+        </div>
+
+        <!--
+          th:each="cita : ${appointments}"
+          Itera la lista enviada por PacienteController.verAgenda()
+          Equivalente al renderAppointments() de app.js pero en el servidor
+        -->
+        <div class="row g-4" id="agendaGrid">
+          <div class="col-md-6 col-xl-4" th:each="cita : ${appointments}">
+            <article class="agenda-item shadow-sm"
+              th:data-patient="${cita.patient}"
+              th:data-service="${cita.service}"
+              th:data-doctor="${cita.doctor}"
+              th:data-schedule="${cita.date + ' · ' + cita.time}"
+              th:data-mode="${cita.mode}"
+              th:data-notes="${cita.notes != null and !#strings.isEmpty(cita.notes)} ? ${cita.notes} : 'Sin observaciones registradas.'">
+
+              <!-- Hora en badge -->
+              <span class="agenda-hour" th:text="${cita.time}">00:00</span>
+
+              <!-- Servicio -->
+              <h3 class="h5 mt-3 mb-2" th:text="${cita.service}">Servicio</h3>
+
+              <!-- Paciente y médico -->
+              <p class="mb-1 fw-semibold" th:text="${cita.patient}">Paciente</p>
+              <p class="text-secondary mb-0" th:text="${cita.doctor}">Médico</p>
+
+              <!-- Fecha y modalidad -->
+              <div class="agenda-meta">
+                <span th:text="${cita.date}">Fecha</span>
+                <span th:text="${cita.mode}">Modalidad</span>
+              </div>
+
+              <!-- Observaciones -->
+              <p class="text-secondary"
+                th:text="${cita.notes != null and !#strings.isEmpty(cita.notes)} ? ${cita.notes} : 'Sin observaciones registradas.'">
+                Observaciones
+              </p>
+
+              <!-- Botón que abre el modal — lee los data-* del article -->
+              <button type="button"
+                      class="btn btn-outline-dark btn-sm view-detail-btn">
+                Ver detalle
+              </button>
+
+            </article>
+          </div>
+
+          <!-- Mensaje si no hay citas registradas -->
+          <div class="col-12" th:if="${#lists.isEmpty(appointments)}">
+            <p class="text-secondary text-center py-4">
+              No hay citas registradas aún. ¡Agrega la primera arriba!
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="py-4">
+    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+      <p class="mb-0">Proyecto final del curso de Marcos de Desarrollo Web · 2026</p>
+      <p class="mb-0 text-secondary">Spring Boot + Thymeleaf · PacienteController</p>
+    </div>
+  </footer>
+
+  <!-- =====================================================
+       MODAL: Detalle de cita
+       El JS de app.js lee los data-* del article
+       y los inyecta en estos elementos
+  ====================================================== -->
+  <div class="modal fade" id="appointmentModal" tabindex="-1"
+       aria-labelledby="appointmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header">
+          <h2 class="modal-title fs-5" id="appointmentModalLabel">Detalle de cita</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-detail">
+            <span class="modal-label">Paciente</span>
+            <p id="modalPatient" class="mb-3"></p>
+            <span class="modal-label">Servicio</span>
+            <p id="modalService" class="mb-3"></p>
+            <span class="modal-label">Médico</span>
+            <p id="modalDoctor" class="mb-3"></p>
+            <span class="modal-label">Fecha y hora</span>
+            <p id="modalSchedule" class="mb-3"></p>
+            <span class="modal-label">Modalidad</span>
+            <p id="modalMode" class="mb-3"></p>
+            <span class="modal-label">Observaciones</span>
+            <p id="modalNotes" class="mb-0"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+  <script th:src="@{/js/app.js}"></script>
+</body>
+</html>
